@@ -60,6 +60,8 @@ cf. [Agdaのパッケージ管理システム](https://agda.readthedocs.io/en/la
 
 ### Emacsをインストール
 
+表示が崩れる可能性があるので、ウィンドウモード推奨です。
+
 Macでhomebrewを使う場合
 
 ```

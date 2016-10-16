@@ -6,7 +6,7 @@
 -- 通例です。
 --
 
-module Basic where
+module Day1 where
 
 --
 -- Agda はそのままではほとんどなにもできません。真偽値やリストなどですら

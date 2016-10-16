@@ -32,6 +32,44 @@ data 𝔹 : Set where  -- 𝔹 というデータ型を宣言する (𝔹 は \b
   true  : 𝔹         -- 1つ目の値は true
   false : 𝔹         -- 2つ目の値は false
 
+-- #
+-- # ちょっと寄り道: unicode について
+-- #    Agda では関数名などに 𝔹 などの非ASCII文字を使うことが多くあります。
+-- #    このような普通に数学で使われるような表記を、後述する mixfix と
+-- #    合わせて用いることで、証明などを簡潔かつ(数学に慣れている人にとっては)
+-- #    分かりやすく記述することができます。
+-- #
+-- #    M-x agda-input-show-translations というコマンドで、入力と文字の
+-- #    対応表を見ることができます。また、𝔹 などにカーソルをあわせて
+-- #    C-u C-x = とコマンドを打つと、以下のようなヘルプがウィンドウに表示
+-- #    されます。この中の to input: というところを見ると、その文字をタイプする
+-- #    ためのコマンドを知ることができます。
+-- #
+-- #              position: 795 of 15864 (5%), column: 42
+-- #             character: 𝔹 (displayed as 𝔹) (codepoint 120121, #o352471, #x1d539)
+-- #     preferred charset: unicode (Unicode (ISO10646))
+-- # code point in charset: 0x1D539
+-- #                script: mathematical
+-- #                syntax: w 	which means: word
+-- #              category: .:Base, L:Left-to-right (strong)
+-- #              to input: type "\bb" with Agda input method
+-- #           buffer code: #xF0 #x9D #x94 #xB9
+-- #             file code: #xF0 #x9D #x94 #xB9 (encoded by coding system utf-8-unix)
+-- #               display: by this font (glyph code)
+-- #     mac-ct:-*-STIXGeneral-normal-normal-normal-*-14-*-*-*-p-0-iso10646-1 (#xA2B)
+-- # 
+-- # Character code properties: customize what to show
+-- #   name: MATHEMATICAL DOUBLE-STRUCK CAPITAL B
+-- #   general-category: Lu (Letter, Uppercase)
+-- #   decomposition: (font 66) (font 'B')
+-- # 
+-- # There are text properties here:
+-- #   face                 font-lock-comment-face
+-- #   fontified            t
+-- # 
+-- # [back]
+-- #
+
 --
 -- C-c C-l でファイルをロードすることができます。Agda で開発をする際は、
 -- 定義を書き終わったり証明を書き終わったりしたときなど適当な
@@ -568,8 +606,8 @@ n+0≡n (suc n) =
 --
 
 data _≤_ : ℕ → ℕ → Set where
-  z≤n : (n : ℕ)                 → zero  ≤ n
-  s≤s : (m n : ℕ) (m≤n : m ≤ n) → suc m ≤ suc n  -- (m n : ℕ) のように型をまとめて
+  z≤m : (m : ℕ)                 → zero  ≤ m
+  s≤s : (n m : ℕ) (n≤m : n ≤ m) → suc n ≤ suc m  -- (m n : ℕ) のように型をまとめて
                                                  -- 記述することもできる。
 
 -- ===================================
@@ -603,23 +641,37 @@ n≤n n = {!!}
 --    n≤m⇒n≤sm : ∀ n m → n ≤ m → n ≤ suc m
 --    n≤m⇒n≤sm = ?
 -- 
--- この命題に関しては、実は n (と m) に関する帰納法ではなく、n ≤ m に
--- 関する帰納法を使った方が簡単に証明できます。
+-- この命題に関しては、実は n (と m) に関する帰納法ではなく、仮定として
+-- 使う事ができる、n ≤ m という関係に関する帰納法を使った方が簡単に証明
+-- できます。まず自然言語による証明を考えてみます。
 --
+--    証明したい命題：任意の自然数 n と m について、n ≤ m であれば n ≤ suc m
+--                  が成り立つ
 --
+--    仮定 n ≤ m について場合分けを行う。_≤_ の定義によれば、以下の2つの場合が
+--    存在する。
 --
+--    1) n ≤ m が z≤n である場合
+--    2) n ≤ m が s≤s である場合
 --
-
-
--- y ≤ x + y    (s≤s ... s≤s (z≤n x))
--- ...
--- 2 ≤ x + 2    (s≤s (s≤s (z≤n x)))
--- 1 ≤ x + 1    (s≤s (z≤n x))
--- 0 ≤ x        (z≤n x)
+--    1) n ≤ m が z≤n である場合
+--
+--       この場合、n = zero なので、証明したい命題は zero ≤ suc m となる。
+--       これは z≤n (suc m) を与えることで証明できる。
+--
+--    2) n ≤ m が s≤s である場合
+--
+--       この場合、ある n′ と m′ が存在して、n = suc n′ かつ m = suc m′
+--       かつ n′ ≤ m′ が成り立っている。帰納法の仮定を用いると、n′ ≤ suc m′
+--       が得られる。s≤s をさらに適用して suc n′ ≤ suc (suc m′) となり、
+--       この場合も証明できる。
+--
+-- TODO: 図による説明
+--
 
 
 n≤m⇒n≤sm : ∀ n m → n ≤ m → n ≤ suc m
-n≤m⇒n≤sm .zero m (z≤n .m) = z≤n (suc m)
+n≤m⇒n≤sm .zero m (z≤m .m) = z≤m (suc m)
 n≤m⇒n≤sm .(suc m) .(suc n) (s≤s m n n≤m) = s≤s m (suc n) (n≤m⇒n≤sm m n n≤m)
 
 --
@@ -628,8 +680,8 @@ n≤m⇒n≤sm .(suc m) .(suc n) (s≤s m n n≤m) = s≤s m (suc n) (n≤m⇒n�
 --
 
 data _≤′_ : ℕ → ℕ → Set where
-  ≤′-refl : ∀ {m}                   → m ≤′ m
-  ≤′-step : ∀ {m n} (m≤′n : m ≤′ n) → m ≤′ suc n
+  ≤′-refl : ∀ (m : ℕ)                   → m ≤′ m
+  ≤′-step : ∀ (n m : ℕ) (n≤′m : n ≤′ m) → n ≤′ suc m
 
 -- ===================================
 -- Exercise: 1 star (_≤′_ の練習)
@@ -657,11 +709,17 @@ data _≤′_ : ℕ → ℕ → Set where
 0≤′n : ∀ n → zero ≤′ n
 0≤′n n = {!!}
 
+-- =================================================================
+-- Exercise: 3 star (s≤s)
+-- 任意の自然数 n と m について、n ≤′ m ならば suc n ≤′ suc m であることを
+-- 証明してください。
+-- =================================================================
+
 n≤′m⇒sn≤′sm : ∀ n m → n ≤′ m → suc n ≤′ suc m
 n≤′m⇒sn≤′sm n m n≤′m = {!!}
 
 -- =============================================
--- Exercise: 4 star (_≤_ と _≤′_ が等価であること)
+-- Exercise: 3 star (_≤_ と _≤′_ が等価であること)
 -- _≤_ と _≤′_ が等価であることを証明してください。
 -- =============================================
 
@@ -670,29 +728,3 @@ n≤m⇒n≤′m n m n≤m = {!!}
 
 n≤′m⇒n≤m : ∀ n m → n ≤′ m → n ≤ m
 n≤′m⇒n≤m n m n≤′m = {!!}
-
---
---
--- § 3. レコード TODO: write
---
---
-
-record Point : Set where
-  field
-    x : ℕ
-    y : ℕ
-
-record Point-◸ : Set where
-  field
-    x : ℕ
-    y : ℕ
-    x≤y : x ≤ y
-
-record _×_ {A : Set} {B : Set} : Set where
-  constructor _,_
-  field
-    inj₁ : A
-    inj₂ : B
-
--- with
--- ×

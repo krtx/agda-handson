@@ -6,7 +6,7 @@
 -- 通例です。
 --
 
-module Basic where
+module Basic-answer where
 
 --
 -- Agda はそのままではほとんどなにもできません。真偽値やリストなどですら
@@ -53,7 +53,6 @@ data 𝔹 : Set where  -- 𝔹 というデータ型を宣言する (𝔹 は \b
 -- #                syntax: w 	which means: word
 -- #              category: .:Base, L:Left-to-right (strong)
 -- #              to input: type "\bb" with Agda input method
--- #              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 -- #           buffer code: #xF0 #x9D #x94 #xB9
 -- #             file code: #xF0 #x9D #x94 #xB9 (encoded by coding system utf-8-unix)
 -- #               display: by this font (glyph code)
@@ -282,7 +281,8 @@ module Explanation-of-≡ where
 --
 
 double-negate-elimination : ∀ (b : 𝔹) → neg (neg b) ≡ b
-double-negate-elimination b = {!!}
+double-negate-elimination true = refl
+double-negate-elimination false = refl
 
 -- ======================================
 -- Exercise: 1 star (and, or, xor, imply)
@@ -291,16 +291,20 @@ double-negate-elimination b = {!!}
 -- ======================================
 
 and : 𝔹 → 𝔹 → 𝔹
-and b₁ b₂ = {!!}
+and true  b = b
+and false _ = false
 
 or : 𝔹 → 𝔹 → 𝔹
-or b₁ b₂ = {!!}
+or true  _ = true
+or false b = b
 
 xor : 𝔹 → 𝔹 → 𝔹
-xor b₁ b₂ = {!!}
+xor true  b = neg b
+xor false b = b
 
 imply : 𝔹 → 𝔹 → 𝔹
-imply b₁ b₂ = {!!}
+imply true false = false
+imply _    _     = true
 
 --
 -- 関数が書けたら、確認として以下の定理を証明してください。
@@ -309,28 +313,28 @@ imply b₁ b₂ = {!!}
 --
 
 check-and₁ : and true false ≡ false
-check-and₁ = {!!}
+check-and₁ = refl
 
 check-and₂ : and true true ≡ true
-check-and₂ = {!!}
+check-and₂ = refl
 
 check-or₁ : or false true ≡ true
-check-or₁ = {!!}
+check-or₁ = refl
 
 check-or₂ : or false false ≡ false
-check-or₂ = {!!}
+check-or₂ = refl
 
 check-xor₁ : xor false true ≡ true
-check-xor₁ = {!!}
+check-xor₁ = refl
 
 check-xor₂ : xor false false ≡ false
-check-xor₂ = {!!}
+check-xor₂ = refl
 
 check-imply₁ : imply true false ≡ false
-check-imply₁ = {!!}
+check-imply₁ = refl
 
 check-imply₂ : imply false false ≡ true
-check-imply₂ = {!!}
+check-imply₂ = refl
 
 -- ===================================
 -- Exercise: 2 star (ド・モルガンの法則)
@@ -342,24 +346,38 @@ check-imply₂ = {!!}
 --
 
 de-morgan-law₁ : ∀ b c → neg (or b c) ≡ and (neg b) (neg c)
-de-morgan-law₁ b c = {!!}
+de-morgan-law₁ true true = refl
+de-morgan-law₁ true false = refl
+de-morgan-law₁ false true = refl
+de-morgan-law₁ false false = refl
 
 de-morgan-law₂ : ∀ b c → neg (and b c) ≡ or (neg b) (neg c)
-de-morgan-law₂ b c = {!!}
+de-morgan-law₂ true true = refl
+de-morgan-law₂ true false = refl
+de-morgan-law₂ false true = refl
+de-morgan-law₂ false false = refl
 
 -- =========================
 -- Exercise: 2 star (排中律)
 -- =========================
 
 excluded-middle : ∀ a → or a (neg a) ≡ true
-excluded-middle a = {!!}
+excluded-middle true = refl
+excluded-middle false = refl
 
 -- =============================
 -- Exercise: 2 star (恒真命題の例)
 -- =============================
 
 tautology : ∀ a b c → imply (and (imply a b) (imply b c)) (imply a c) ≡ true
-tautology a b c = {!!}
+tautology true true true = refl
+tautology true true false = refl
+tautology true false true = refl
+tautology true false false = refl
+tautology false true true = refl
+tautology false true false = refl
+tautology false false true = refl
+tautology false false false = refl
 
 --
 -- C-c C-c のコマンドは、場合分けの対象を複数受け付けることができます。
@@ -408,7 +426,7 @@ three = suc (suc (suc zero))
 -- ========================
 
 seven : ℕ
-seven = {!!}
+seven = suc (suc (suc (suc (suc (suc (suc zero))))))
 
 --
 -- この定義のもとで、自然数同士の足し算は次のように定義されます。
@@ -472,7 +490,7 @@ if false then x else y = y
 -- =============================================================
 
 0+n≡n : ∀ n → zero + n ≡ n
-0+n≡n n = {!!}
+0+n≡n n = refl
 
 -- #
 -- # ちょっと寄り道: 命題の名前について
@@ -487,7 +505,8 @@ if false then x else y = y
 -- ============================================================
 
 n+0≡n-first-attempt : ∀ n → n + zero ≡ n
-n+0≡n-first-attempt n = {!!}
+n+0≡n-first-attempt zero    = refl
+n+0≡n-first-attempt (suc n) = cong suc (n+0≡n-first-attempt n)
 
 --
 -- ここでは、ある自然数 n に右から 0 を足した結果は n に等しいことを証明します。
@@ -570,7 +589,7 @@ n+0≡n-first-attempt n = {!!}
 -- 
 
 cong-suc : ∀ n m → n ≡ m → suc n ≡ suc m
-cong-suc n m eq = {!!}
+cong-suc n .n refl = refl
 
 --
 -- Agda では、帰納法の仮定を用いることは再帰することに対応します。
@@ -594,7 +613,8 @@ n+0≡n (suc n) =
 -- ===================================================
 
 +-assoc : ∀ n m o → n + m + o ≡ n + (m + o)
-+-assoc = {!!}
++-assoc zero m o = refl
++-assoc (suc n) m o = cong-suc (n + m + o) (n + (m + o)) (+-assoc n m o)
 
 --
 -- a ≡ b ならば b ≡ a である、というのも証明すべき命題です。
@@ -672,7 +692,7 @@ symmetric₂ {a} {.a} refl = refl
 --
 
 n≡n+0 : ∀ n → n ≡ n + zero
-n≡n+0 n = {!!}
+n≡n+0 n = symmetric (n+0≡n n)
 
 -- =====================================================================
 -- Exercise: 2 star (transitivity)
@@ -681,7 +701,7 @@ n≡n+0 n = {!!}
 -- =====================================================================
 
 transitive : ∀ {a b c : ℕ} → a ≡ b → b ≡ c → a ≡ c
-transitive a≡b b≡c = {!!}
+transitive refl refl = refl
 
 -- ======================================================================
 -- Exercise: 3 star (_+_ の交換法則)
@@ -690,11 +710,13 @@ transitive a≡b b≡c = {!!}
 -- ======================================================================
 
 sm+n≡m+sn : ∀ m n → suc m + n ≡ m + suc n
-sm+n≡m+sn m n = {!!}
+sm+n≡m+sn zero n = refl
+sm+n≡m+sn (suc m) n = cong-suc (suc (m + n)) (m + suc n) (sm+n≡m+sn m n)
 
 +-comm : ∀ n m → n + m ≡ m + n
-+-comm zero    m = {!!}
-+-comm (suc n) m = {!!}
++-comm zero    m = n≡n+0 m
++-comm (suc n) m = transitive (cong-suc (n + m) (m + n) (+-comm n m))
+                              (sm+n≡m+sn m n)
 
 --
 -- § 2.3 関係の定義、及び関係に関する帰納法
@@ -718,16 +740,19 @@ data _≤_ : ℕ → ℕ → Set where
 -- ===================================
 
 0≤1 : zero ≤ one
-0≤1 = {!!}
+0≤1 = z≤m (suc zero)
 
 0≤2 : zero ≤ two
-0≤2 = {!!}
+0≤2 = z≤m (suc (suc zero))
 
 1≤2 : one ≤ two
-1≤2 = {!!}
+1≤2 = s≤s zero (suc zero) (z≤m (suc zero))
 
 4≤7 : four ≤ seven -- めんどくさかったら C-c C-a で
-4≤7 = {!!}
+4≤7 = s≤s (suc (suc (suc zero))) (suc (suc (suc (suc (suc (suc zero))))))
+        (s≤s (suc (suc zero)) (suc (suc (suc (suc (suc zero)))))
+         (s≤s (suc zero) (suc (suc (suc (suc zero))))
+          (s≤s zero (suc (suc (suc zero))) (z≤m (suc (suc (suc zero)))))))
 
 -- ==========================================================
 -- Exercise: 3 star (n は n 以上)
@@ -735,7 +760,8 @@ data _≤_ : ℕ → ℕ → Set where
 -- ==========================================================
 
 n≤n : ∀ {n} → n ≤ n
-n≤n {n = n} = {!!}
+n≤n {zero} = z≤m zero
+n≤n {suc n} = s≤s n n n≤n
 
 --
 -- 次の命題を考えてみましょう。
@@ -772,7 +798,8 @@ n≤n {n = n} = {!!}
 --
 
 n≤m⇒n≤sm : ∀ {n m} → n ≤ m → n ≤ suc m
-n≤m⇒n≤sm n≤m = {!!}
+n≤m⇒n≤sm (z≤m m) = z≤m (suc m)
+n≤m⇒n≤sm (s≤s n m n≤m) = s≤s n (suc m) (n≤m⇒n≤sm n≤m)
 
 --
 -- ところで、関係 _≤_ は次のようにも定義できます。以下の定義 _≤′_ と
@@ -789,16 +816,21 @@ data _≤′_ : ℕ → ℕ → Set where
 -- ===================================
 
 0≤′1 : zero ≤′ one
-0≤′1 = {!!}
+0≤′1 = ≤′-step zero zero (≤′-refl zero)
 
 0≤′2 : zero ≤′ two
-0≤′2 = {!!}
+0≤′2 = ≤′-step zero (suc zero) (≤′-step zero zero (≤′-refl zero))
 
 1≤′2 : one ≤′ two
-1≤′2 = {!!}
+1≤′2 = ≤′-step (suc zero) (suc zero) (≤′-refl (suc zero))
 
 4≤′7 : four ≤′ seven -- めんどくさかったら C-c C-a で
-4≤′7 = {!!}
+4≤′7 = ≤′-step (suc (suc (suc (suc zero))))
+         (suc (suc (suc (suc (suc (suc zero))))))
+         (≤′-step (suc (suc (suc (suc zero))))
+          (suc (suc (suc (suc (suc zero)))))
+          (≤′-step (suc (suc (suc (suc zero)))) (suc (suc (suc (suc zero))))
+           (≤′-refl (suc (suc (suc (suc zero)))))))
 
 -- ===========================================================
 -- Exercise: 3 star (0 ≤′ n)
@@ -807,7 +839,8 @@ data _≤′_ : ℕ → ℕ → Set where
 -- ===========================================================
 
 0≤′n : ∀ {n} → zero ≤′ n
-0≤′n {n = n} = {!!}
+0≤′n {zero} = ≤′-refl zero
+0≤′n {suc n} = ≤′-step zero n 0≤′n
 
 -- =================================================================
 -- Exercise: 3 star (s≤s)
@@ -816,7 +849,8 @@ data _≤′_ : ℕ → ℕ → Set where
 -- =================================================================
 
 n≤′m⇒sn≤′sm : ∀ {n m} → n ≤′ m → suc n ≤′ suc m
-n≤′m⇒sn≤′sm n≤′m = {!!}
+n≤′m⇒sn≤′sm (≤′-refl m) = ≤′-refl (suc m)
+n≤′m⇒sn≤′sm (≤′-step n m n≤′m) = ≤′-step (suc n) (suc m) (n≤′m⇒sn≤′sm n≤′m)
 
 -- ==============================================================
 -- Exercise: 3 star (_≤_ と _≤′_ が等価であること)
@@ -824,8 +858,10 @@ n≤′m⇒sn≤′sm n≤′m = {!!}
 -- ==============================================================
 
 n≤m⇒n≤′m : ∀ {n m} → n ≤ m → n ≤′ m
-n≤m⇒n≤′m n≤m = {!!}
+n≤m⇒n≤′m (z≤m m) = 0≤′n
+n≤m⇒n≤′m (s≤s n m n≤m) = n≤′m⇒sn≤′sm (n≤m⇒n≤′m n≤m)
 
 n≤′m⇒n≤m : ∀ {n m} → n ≤′ m → n ≤ m
-n≤′m⇒n≤m n≤′m = {!!}
+n≤′m⇒n≤m (≤′-refl m) = n≤n
+n≤′m⇒n≤m (≤′-step n m n≤′m) = n≤m⇒n≤sm (n≤′m⇒n≤m n≤′m)
 

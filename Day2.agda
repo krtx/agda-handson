@@ -134,7 +134,7 @@ sm+n≡m+sn (suc m) n = cong suc (sm+n≡m+sn m n)
 --
 --   +-comm₁ : ∀ n m → n + m ≡ m + n
 --   +-comm₁ zero    m = n+0≡0 m                       この穴でC-c C-,
---   +-comm₁ (suc n) m rewrite +-comm₁ n m | sm+n≡m+sn n m = {!!}
+--   +-comm₁ (suc n) m rewrite +-comm₁ n m | sm+n≡m+sn m n = {!!}
 --                                                            ^^
 --   Goal: m + suc n ≡ m + suc n
 --   ————————————————————————————————————————————————————————————

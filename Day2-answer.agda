@@ -1,4 +1,5 @@
-module Day2 where
+module Day2-answer where
+
 
 --
 --
@@ -149,7 +150,7 @@ sm+n≡m+sn (suc m) n = cong suc (sm+n≡m+sn m n)
 
 +-comm₁ : ∀ n m → n + m ≡ m + n
 +-comm₁ zero    m = n+0≡0 m
-+-comm₁ (suc n) m = {!!}
++-comm₁ (suc n) m rewrite +-comm₁ n m | sm+n≡m+sn m n = refl
 
 --
 -- ここでは rewrite によって証明がほぼ完了してしまいましたが、実際には
@@ -268,25 +269,74 @@ open SemiringSolver
 --
 
 n*0≡0 : ∀ n → n * zero ≡ zero
-n*0≡0 = {!!}
+n*0≡0 zero    = refl
+n*0≡0 (suc n) = n*0≡0 n
 
 n*1≡n : ∀ n → n * 1 ≡ n
-n*1≡n = {!!}
+n*1≡n zero = refl
+n*1≡n (suc n) = cong suc (n*1≡n n)
 
 n*2≡n+n : ∀ n → n * 2 ≡ n + n
-n*2≡n+n = {!!}
+n*2≡n+n zero = refl
+n*2≡n+n (suc n) rewrite +-comm n (suc n) =
+  cong (λ x → suc (suc x)) (n*2≡n+n n)
 
 m*sn≡m+m*n : ∀ m n → m * (suc n) ≡ m + m * n
-m*sn≡m+m*n = {!!}
+m*sn≡m+m*n zero n = refl
+m*sn≡m+m*n (suc m) n rewrite m*sn≡m+m*n m n = cong suc (begin
+  n + (m + m * n)
+    ≡⟨ sym (+-assoc n m _) ⟩
+  n + m + m * n
+    ≡⟨ cong (λ x → x + m * n) (+-comm n m) ⟩
+  m + n + m * n
+    ≡⟨ +-assoc m n _ ⟩
+  m + (n + m * n)
+    ∎)
 
 *-comm : ∀ n m → n * m ≡ m * n
-*-comm = {!!}
+*-comm zero m = sym (n*0≡0 m)
+*-comm (suc n) m rewrite m*sn≡m+m*n m n = cong (_+_ m) (*-comm n m)
 
 *-distrib-+₁ : ∀ n m o → (n + m) * o ≡ n * o + m * o
-*-distrib-+₁ = {!!}
+*-distrib-+₁ zero m o = refl
+*-distrib-+₁ (suc n) m o = begin
+  o + (n + m) * o
+    ≡⟨ cong (_+_ o) (*-distrib-+₁ n m o) ⟩
+  o + (n * o + m * o)
+    ≡⟨ sym (+-assoc o (n * o) (m * o)) ⟩
+  o + n * o + m * o
+    ∎
 
 *-distrib-+₂ : ∀ n m o → n * (m + o) ≡ n * m + n * o
-*-distrib-+₂ = {!!}
+*-distrib-+₂ zero m o = refl
+*-distrib-+₂ (suc n) m o = begin
+  m + o + n * (m + o)
+    ≡⟨ cong (_+_ (m + o)) (*-distrib-+₂ n m o) ⟩
+  m + o + (n * m + n * o)
+    ≡⟨ +-assoc m o (n * m + n * o) ⟩
+  m + (o + (n * m + n * o))
+    ≡⟨ cong (_+_ m) (sym (+-assoc o (n * m) _)) ⟩
+  m + (o + n * m + n * o)
+    ≡⟨ cong (λ x → m + (x + n * o)) (+-comm o (n * m)) ⟩
+  m + (n * m + o + n * o)
+    ≡⟨ cong (_+_ m) (+-assoc (n * m) o _) ⟩
+  m + (n * m + (o + n * o))
+    ≡⟨ sym (+-assoc m (n * m) _) ⟩
+  m + n * m + (o + n * o)
+    ∎
+
+*-distrib-+₂′ : ∀ n m o → n * (m + o) ≡ n * m + n * o
+*-distrib-+₂′ n m o rewrite *-comm n (m + o)
+                          | *-comm n m
+                          | *-comm n o = *-distrib-+₁ m o n
 
 expand : ∀ a b c d → (a + b) * (c + d) ≡ (a * c + b * c) + (a * d + b * d)
-expand = {!!}
+expand a b c d = begin
+  (a + b) * (c + d)
+    ≡⟨ *-distrib-+₂ (a + b) c d ⟩
+  (a + b) * c + (a + b) * d
+    ≡⟨ cong (λ x → x + (a + b) * d) (*-distrib-+₁ a b c) ⟩
+  a * c + b * c + (a + b) * d
+    ≡⟨ cong (_+_ (a * c + b * c)) (*-distrib-+₁ a b d) ⟩
+  a * c + b * c + (a * d + b * d)
+    ∎

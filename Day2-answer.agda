@@ -30,7 +30,7 @@ the-answer-of-bla-bla-bla : ℕ
 the-answer-of-bla-bla-bla = 42
 
 --
--- n+0≡0 などの必要な補題を証明します。ところで、Day1 で定義した
+-- n≡n+0 などの必要な補題を証明します。ところで、Day1 で定義した
 -- cong-suc は次のような命題でした。
 --
 --   cong-suc : ∀ n m → n ≡ m → suc n ≡ suc m
@@ -42,13 +42,13 @@ the-answer-of-bla-bla-bla = 42
 --
 -- 引数が implicit になっていること、suc が f として一般化されているという
 -- 違いがあります。引数が implicit になっているという違いを除いて、cong-suc
--- は cong suc と同等です。以下の n+0≡0 の定義を Day1 のものと比べてみて
+-- は cong suc と同等です。以下の n≡n+0 の定義を Day1 のものと比べてみて
 -- ください。
 --
 
-n+0≡0 : ∀ n → n ≡ n + 0
-n+0≡0 zero    = refl
-n+0≡0 (suc n) = cong suc (n+0≡0 n)
+n≡n+0 : ∀ n → n ≡ n + 0
+n≡n+0 zero    = refl
+n≡n+0 (suc n) = cong suc (n≡n+0 n)
 
 --
 -- cong の引数 f はいちいち定義してもいいですが、匿名関数を使ったほうが便利です。
@@ -88,7 +88,7 @@ sm+n≡m+sn (suc m) n = cong suc (sm+n≡m+sn m n)
 --
 
 +-comm : ∀ n m → n + m ≡ m + n
-+-comm zero    m = n+0≡0 m
++-comm zero    m = n≡n+0 m
 +-comm (suc n) m = trans (cong suc (+-comm n m)) (sm+n≡m+sn m n)
 
 --
@@ -105,7 +105,7 @@ sm+n≡m+sn (suc m) n = cong suc (sm+n≡m+sn m n)
 -- 次のようになっています。
 --
 --   +-comm₁ : ∀ n m → n + m ≡ m + n
---   +-comm₁ zero    m = n+0≡0 m
+--   +-comm₁ zero    m = n≡n+0 m
 --   +-comm₁ (suc n) m = {!!}0 <-- この穴で C-c C-,
 --
 --   Goal: suc (n + m) ≡ m + suc n
@@ -117,7 +117,7 @@ sm+n≡m+sn (suc m) n = cong suc (sm+n≡m+sn m n)
 -- インスタンスを伴って記述します。
 --
 --   +-comm₁ : ∀ n m → n + m ≡ m + n
---   +-comm₁ zero    m = n+0≡0 m
+--   +-comm₁ zero    m = n≡n+0 m
 --   +-comm₁ (suc n) m rewrite +-comm₁ n m = {!!} <-- この穴で C-c C-,
 --                             ^^^^^^^^^^^
 --
@@ -134,7 +134,7 @@ sm+n≡m+sn (suc m) n = cong suc (sm+n≡m+sn m n)
 -- 記述します。
 --
 --   +-comm₁ : ∀ n m → n + m ≡ m + n
---   +-comm₁ zero    m = n+0≡0 m                       この穴でC-c C-,
+--   +-comm₁ zero    m = n≡n+0 m                       この穴でC-c C-,
 --   +-comm₁ (suc n) m rewrite +-comm₁ n m | sm+n≡m+sn m n = {!!}
 --                                                            ^^
 --   Goal: m + suc n ≡ m + suc n
@@ -149,7 +149,7 @@ sm+n≡m+sn (suc m) n = cong suc (sm+n≡m+sn m n)
 --
 
 +-comm₁ : ∀ n m → n + m ≡ m + n
-+-comm₁ zero    m = n+0≡0 m
++-comm₁ zero    m = n≡n+0 m
 +-comm₁ (suc n) m rewrite +-comm₁ n m | sm+n≡m+sn m n = refl
 
 --
@@ -199,7 +199,7 @@ open ≡-Reasoning
 --
 
 +-comm₂ : ∀ n m → n + m ≡ m + n
-+-comm₂ zero    m = n+0≡0 m
++-comm₂ zero    m = n≡n+0 m
 +-comm₂ (suc n) m = begin        -- begin で開始
   suc (n + m)                    -- 証明したい命題 suc n + m ≡ m + suc n の左辺の値
                                  --              ^^^^^^^^^

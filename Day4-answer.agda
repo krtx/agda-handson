@@ -97,27 +97,6 @@ mh-sym record { x = px ; y = py }
   where
     open ≡-Reasoning
 
-mh-id₀ : ∀ x y → manhattan₀ x y ≡ 0 → x ≡ y
-mh-id₀ zero    zero    eq = refl
-mh-id₀ zero    (suc y) ()
-mh-id₀ (suc x) zero    ()
-mh-id₀ (suc x) (suc y) eq = cong suc (mh-id₀ x y eq)
-
-open import Data.Product
-
-+-zero : ∀ x y → x + y ≡ 0 → x ≡ 0 × y ≡ 0
-+-zero zero    zero    refl = refl , refl
-+-zero zero    (suc y) ()
-+-zero (suc x) zero    ()
-+-zero (suc x) (suc y) ()
-
-mh-id : ∀ p q → manhattan p q ≡ 0 → p ≡ q
-mh-id record { x = px ; y = py }
-      record { x = qx ; y = qy }
-      eq with +-zero (manhattan₀ px qx) (manhattan₀ py qy) eq
-... | eq-x , eq-y rewrite mh-id₀ px qx eq-x
-                        | mh-id₀ py qy eq-y = refl
-
 -- ==================================================================
 -- Exercise: tri-ineq (★★★★)
 -- マンハッタン距離が三角不等式を満たすことを証明してください。ただし、この

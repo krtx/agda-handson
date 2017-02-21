@@ -1,97 +1,222 @@
 module Day5-answer where
 
-open import Data.List
 open import Data.Nat
-open import Relation.Nullary
-open import Relation.Binary
-open DecTotalOrder decTotalOrder using () renaming (trans to ≤-trans)
+open import Relation.Binary.PropositionalEquality
 
-data Perm {A : Set} : List A → List A → Set where
-  p-empty : Perm [] []
-  p-skip  : ∀ {l₁ l₂ : List A} {h}
-            → Perm l₁ l₂
-            → Perm (h ∷ l₁) (h ∷ l₂)
-  p-swap  : ∀ {l : List A} {x y}
-            → Perm (x ∷ y ∷ l) (y ∷ x ∷ l)
-  p-trans : ∀ {l₁ l₂ l₃ : List A}
-            → Perm l₁ l₂
-            → Perm l₂ l₃
-            → Perm l₁ l₃
+open import Day4-answer
 
-data Less : ℕ → List ℕ → Set where
-  l-nil  : ∀ {x} → Less x []
-  l-cons : ∀ {a x} {xs} → a ≤ x → Less a xs → Less a (x ∷ xs)
+--
+-- § 5. Absurd pattern
+--
 
-data Ordered : List ℕ → Set where
-  o-nil  : Ordered []
-  o-cons : ∀ {x} {xs} → Less x xs → Ordered xs → Ordered (x ∷ xs)
+--
+-- Even 1 という型を考えてみます。Even の定義から、Even 1 には e-zero も
+-- e-suc もコンストラクタとして不適当であることが分かります。このように対応する
+-- コンストラクタが存在しないような型を引数として受け取る場合、引数のところに ()
+-- を記述し、右辺を省略する書き方ができます。これを absurd pattern と言います。
+--
 
-record Sorted-of (xs′ : List ℕ) : Set where
+one-not-even : ∀ {A : Set} → Even 1 → A
+one-not-even ()
+
+--
+-- Even 1 に対応する値は存在しないので、one-not-even を関数として使おうとしても
+-- 引数を与えることができません。そのため、右辺を記述する必要はないのです。
+--
+-- 次に、コンストラクタを1つも持たないデータ型を考えます。
+--
+
+data ⊥ : Set where
+
+--
+-- ⊥ もコンストラクタが存在しないので、one-not-even と同様の命題が証明できます。
+--
+
+⊥-elim : ∀ {A : Set} → ⊥ → A
+⊥-elim ()
+
+--
+-- ある命題 P が真であることは、P という型をもつ値が定義できることと同値でした。
+-- P が偽であることについてはどうでしょうか。直観主義論理(より正確には BHK 解釈)
+-- では、P が偽であることは P → ⊥ という命題として解釈されます。P が偽であれば、
+-- P の証明は存在しません。したがって、P → ⊥ という命題は成り立ちます。
+--
+
+¬_ : Set → Set
+¬ P = P → ⊥
+
+-- ==================================================================
+-- Exercise: no-even (★★)
+-- 任意の自然数 k について k * 2 + 1 が偶数ではないことを証明してください。
+-- ==================================================================
+
+no-even : ∀ k → ¬ Even (k * 2 + 1)
+no-even zero    ()
+no-even (suc k) (e-suc e) = no-even k e
+
+-- ==================================================================
+-- Exercise: no-odd (★★)
+-- 任意の自然数 k について k * 2 が奇数ではないことを証明してください。
+-- ==================================================================
+
+no-odd : ∀ k → ¬ Odd (k * 2)
+no-odd zero    ()
+no-odd (suc k) (o-suc o) = no-odd k o
+
+--
+-- 2つの型の組を作るレコード型 _×_ は次のように定義されます。この _×_ は
+-- 論理積として解釈され、A × B という型は A かつ B という命題を意味します。
+--
+
+infix 4 _,_
+infix 2 _×_
+
+record _×_ (A : Set) (B : Set) : Set where
+  constructor _,_
   field
-    xs      : List ℕ
-    ordered : Ordered xs
-    perm    : Perm xs xs′
+    proj₁ : A
+    proj₂ : B
 
-p-refl : ∀ {A : Set} {xs : List A} → Perm xs xs
-p-refl {xs = []}     = p-empty
-p-refl {xs = _ ∷ xs} = p-skip (p-refl {xs = xs})
+--
+-- 簡単な命題の組を定義してみます。
+--
 
-p-sym : ∀ {A : Set} {xs ys : List A} → Perm xs ys → Perm ys xs
-p-sym p-empty               = p-empty
-p-sym (p-skip perm)         = p-skip (p-sym perm)
-p-sym p-swap                = p-swap
-p-sym (p-trans perm₁ perm₂) = p-trans (p-sym perm₂) (p-sym perm₁)
+1x2 : 1 ≡ 1 × 2 ≡ 2
+1x2 = refl , refl
 
-Less-≤ : ∀ {a b} {l} → a ≤ b → Less b l → Less a l
-Less-≤ a≤b l-nil           = l-nil
-Less-≤ a≤b (l-cons b≤x le) = l-cons (≤-trans a≤b b≤x) (Less-≤ a≤b le)
+--
+-- 注意として、コンストラクタ _,_ は今まで定義してきたような _+_ などと同じ
+-- ように、前後に空白が必要です。例えば次のように書くとエラーになります。
+-- この場合は、2, が何らかの値であると解釈されてしまいます。
+--
+--   2x3 : ℕ × ℕ
+--   2x3 = 2, 3
+--
+-- _×_ は標準ライブラリだと Data.Product で定義されています。
+--
 
-Perm-≤ : ∀ {a xs ys} → Less a xs → Perm xs ys → Less a ys
-Perm-≤ l-nil                        p-empty               = l-nil
-Perm-≤ (l-cons a≤h le)              (p-skip perm)         = l-cons a≤h (Perm-≤ le perm)
-Perm-≤ (l-cons a≤x (l-cons a≤y le)) p-swap                = l-cons a≤y (l-cons a≤x le)
-Perm-≤ le                           (p-trans perm₁ perm₂) = Perm-≤ (Perm-≤ le perm₁) perm₂
+-- ==================================================================
+-- Exercise: no-odd (★★)
+-- 任意の自然数 k について k が同時に偶数かつ奇数とはならないことを証明して
+-- ください。
+-- ==================================================================
 
-1+m≰1+n⇒m≰n : ∀ {m n} → 1 + m ≰ 1 + n → m ≰ n
-1+m≰1+n⇒m≰n 1+m≰1+n m≰n with 1+m≰1+n (s≤s m≰n)
+no-eo : ∀ k → ¬ (Even k × Odd k)
+no-eo zero          (_       , ())
+no-eo (suc zero)    (()      , _)
+no-eo (suc (suc k)) (e-suc e , o-suc o) = no-eo k (e , o)
+
+--
+-- 引数をうまく使って ⊥ が作れるとき、absurd pattern と with pattern を
+-- 組み合わせて元の命題を証明することができます。
+--
+
+pnnp : ∀ {P Q : Set} → P → (P → ⊥) → Q
+pnnp p np with np p
 ... | ()
 
-m≰n⇒n≤m : ∀ {m n} → m ≰ n → n ≤ m
-m≰n⇒n≤m {zero}  {_}     m≰n with m≰n z≤n
+-- ==================================================================
+-- Exercise: cp (★★)
+-- 次の命題を証明してください。
+-- ==================================================================
+
+cp : ∀ {P Q R : Set} → (P → Q) → (Q → ⊥) → P → R
+cp p⇒q nq p with nq (p⇒q p)
 ... | ()
-m≰n⇒n≤m {suc m} {zero}  m≰n = z≤n
-m≰n⇒n≤m {suc m} {suc n} m≰n = s≤s (m≰n⇒n≤m (1+m≰1+n⇒m≰n m≰n))
 
-insert : ∀ (a : ℕ) (xs : List ℕ) → Ordered xs → Sorted-of (a ∷ xs)
-insert a [] o-nil = record { xs      = a ∷ []
-                           ; ordered = o-cons l-nil o-nil
-                           ; perm    = p-skip p-empty }
-insert a (x ∷ xs) (o-cons x≤xs ordered) with a ≤? x
-... | yes a≤x = record { xs      = a ∷ x ∷ xs
-                       ; ordered = o-cons (l-cons a≤x (Less-≤ a≤x x≤xs))
-                                          (o-cons x≤xs ordered)
-                       ; perm    = p-refl }
-... | no  a≰x = record { xs      = x ∷ Sorted-of.xs IH
-                       ; ordered = o-cons (Perm-≤ (l-cons (m≰n⇒n≤m a≰x) x≤xs)
-                                                  (p-sym (Sorted-of.perm IH)))
-                                          (Sorted-of.ordered IH)
-                       ; perm    = p-trans (p-skip (Sorted-of.perm IH))
-                                           p-swap
-                       }
-  where
-    IH : Sorted-of (a ∷ xs)
-    IH = insert a xs ordered
+-- ==================================================================
+-- Exercise: dne (★★★)
+-- 次の命題を証明してください。
+-- ==================================================================
 
-insert-sort : ∀ (xs : List ℕ) → Sorted-of xs
-insert-sort [] = record { xs = [] ; ordered = o-nil ; perm = p-empty }
-insert-sort (x ∷ xs) =
-  record { xs      = Sorted-of.xs IH₀
-         ; ordered = Sorted-of.ordered IH₀
-         ; perm    = p-trans (Sorted-of.perm IH₀)
-                             (p-skip (Sorted-of.perm IH)) }
-  where
-    IH : Sorted-of xs
-    IH = insert-sort xs
+dne : ∀ {P Q : Set} → (((P → ⊥) → ⊥) → ⊥) → P → Q
+dne np p with np (λ z → z p)
+... | ()
 
-    IH₀ : Sorted-of (x ∷ Sorted-of.xs IH)
-    IH₀ = insert x (Sorted-of.xs IH) (Sorted-of.ordered IH)
+--
+-- 論理積に対応する型（を作る型）は _×_ でしたが、一方論理和に対応する型（を作る型）
+-- は次のように定義される _⊎_ です（\uplus で入力）。
+--
+
+data _⊎_ (A : Set) (B : Set) : Set where
+  inj₁ : A → A ⊎ B
+  inj₂ : B → A ⊎ B
+
+--
+-- A という命題もしくは B という命題のいずれかが証明できれば A ⊎ B という命題も
+-- 証明できるということを意味しています。例えば、1 は偶数であるか奇数であるかの
+-- いずれかなので、次の命題は成り立ちます。
+--
+
+eo-one : Even 1 ⊎ Odd 1
+eo-one = inj₂ o-one
+
+--
+-- この場合 Even 1 は証明できませんが、Odd 1 が証明できるので Even 1 ⊎ Odd 1
+-- は証明可能です。同様にして 2 が偶数あるいは奇数のいずれかであることも証明でき
+-- ます。
+--
+
+eo-two : Even 2 ⊎ Odd 2
+eo-two = inj₁ (e-suc e-zero)
+
+--
+-- この場合 Odd 2 は証明できませんが、Even 2 が証明できるので Even 2 ⊎ Odd 2
+-- は証明可能です。
+--
+
+-- ==================================================================
+-- Exercise: eo-k (★★)
+-- 任意の自然数が偶数あるいは奇数であることを証明してください。
+-- ==================================================================
+
+eo-k : ∀ k → Even k ⊎ Odd k
+eo-k zero       = inj₁ e-zero
+eo-k (suc zero) = inj₂ o-one
+eo-k (suc (suc k)) with eo-k k
+... | inj₁ e = inj₁ (e-suc e)
+... | inj₂ o = inj₂ (o-suc o)
+
+-- ==================================================================
+-- Exercise: classic (★★)
+-- 次の命題を証明してください。
+-- ==================================================================
+
+classic : ∀ {P : Set} → P ⊎ (P → ⊥) → ((P → ⊥) → ⊥) → P
+classic (inj₁ p)  nnp = p
+classic (inj₂ np) nnp with nnp np
+... | ()
+
+-- ==================================================================
+-- Exercise: loem (★★★)
+-- 次の命題を証明してください。
+-- ==================================================================
+
+loem : ∀ {P Q : Set} → ((P ⊎ (P → ⊥)) → ⊥) → Q
+loem p with p (inj₂ (λ x → p (inj₁ x)))
+... | ()
+
+-- ==================================================================
+-- Exercise: mh-id (★★★)
+-- 再びマンハッタン距離の例に戻ります。ある2点間のマンハッタン距離が 0 ならば
+-- その2点は同一であることを示してください。
+-- ==================================================================
+
+mh-id₀ : ∀ x y → manhattan₀ x y ≡ 0 → x ≡ y
+mh-id₀ zero    zero    eq = refl
+mh-id₀ zero    (suc y) ()
+mh-id₀ (suc x) zero    ()
+mh-id₀ (suc x) (suc y) eq = cong suc (mh-id₀ x y eq)
+
++-zero : ∀ x y → x + y ≡ 0 → x ≡ 0 × y ≡ 0
++-zero zero    zero    refl = refl , refl
++-zero zero    (suc y) ()
++-zero (suc x) zero    ()
++-zero (suc x) (suc y) ()
+
+mh-id : ∀ p q → manhattan p q ≡ 0 → p ≡ q
+mh-id record { x = px ; y = py }
+      record { x = qx ; y = qy }
+      eq with +-zero (manhattan₀ px qx) (manhattan₀ py qy) eq
+... | eq-x , eq-y rewrite mh-id₀ px qx eq-x
+                        | mh-id₀ py qy eq-y = refl

@@ -57,3 +57,5 @@ if_then_else_ は mixfix の例として
 C-c C-l でゴールの一覧だしても計算が進んでいない（with のところができてない）
 
 with で計算が進んだあとのゴールについて reasoning をする必要がある
+
+open import と open の違い

@@ -1,7 +1,8 @@
-module Day5 where
+module Day6 where
 
 open import Data.List
 open import Data.Nat
+open import Relation.Nullary
 
 --
 -- 挿入ソートが正しいことを証明してください。ここでは、ソートアルゴリズムが
@@ -74,6 +75,8 @@ record Sorted-of (xs′ : List ℕ) : Set where
 --   さい。
 --
 --   大小比較には Data.Nat._≤?_ を使ってください。_≤?_ は2つの自然数を比較
+--   し、引数の2つの自然数 x と y が x ≤ y であるか x ≰ y を証明付きで返す
+--   関数です。
 -- ==================================================================
 
 insert-sort : ∀ (xs : List ℕ) → Sorted-of xs

@@ -1,4 +1,4 @@
-module Day5-answer where
+module Day6-answer where
 
 open import Data.List
 open import Data.Nat

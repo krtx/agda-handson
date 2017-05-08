@@ -114,7 +114,7 @@ neg-of-true = neg true  -- neg-of-true は neg true である
 open import Relation.Binary.PropositionalEquality
 
 --
--- Corry Howard 同型対応によると、証明を行うこととプログラムを書くことは
+-- Curry-Howard 同型対応によると、証明を行うこととプログラムを書くことは
 -- 等価な操作であるとみなすことができます。命題は型、証明はプログラム
 -- (関数本体)と対応します。
 --
